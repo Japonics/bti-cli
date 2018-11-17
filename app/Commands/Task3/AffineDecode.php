@@ -39,21 +39,8 @@ class AffineDecode extends Command
 
         echo "A: {$a}\n";
 
-        $x = null;
+        $x = $this->extendedEuclides(26, $a);
 
-        do {
-
-            $x++;
-            $founded = ($a * $x) % 26;
-
-            if ($x > 10000) {
-                echo "Not found X\n";
-                return;
-            }
-
-        } while ($founded !== 1);
-
-        print_r("K = ({$a}, {$b}), so function is e(x) = {$a}x + {$b}\n");
         print_r("X = {$x}\n");
         $encoded = "";
 
@@ -80,5 +67,81 @@ class AffineDecode extends Command
     public function schedule(Schedule $schedule): void
     {
         // $schedule->command(static::class)->everyMinute();
+    }
+
+    private function extendedEuclides($nwd_a, $nwd_b)
+    {
+    $r = null;
+    $nwd = null;
+
+    $a = null;
+    $q = null;
+    $b = null;
+
+    $x = null;
+    $x1 = null;
+    $x2 = null;
+
+    $y = null;
+    $y1 = null;
+    $y2 = null;
+
+    // a must be greater than b
+    if ($nwd_b > $nwd_a)
+    {
+        $nwd = $nwd_b;
+        $nwd_b = $nwd_a;
+        $nwd_a = $nwd;
+    }
+
+    //initialize a and b
+    $a = $nwd_a;
+    $b = $nwd_b;
+
+    //initialize r and nwd
+    $q = floor($a / $b);
+    $r = $a - $q * $b;
+    $nwd = $b;
+
+    //initialize x and y
+    $x2 = 1;
+    $x1 = 0;
+    $y2 = 0;
+    $y1 = 1;
+    $x = 1;
+    $y = $y2 - ($q - 1)* $y1;
+
+    while ($r != 0)
+    {
+        $a = $b;
+        $b = $r;
+
+        $x = $x2 - $q * $x1;
+        $x2 = $x1;
+        $x1 = $x;
+
+        $y = $y2 - $q * $y1;
+        $y2 = $y1;
+        $y1 = $y;
+
+        $nwd = $r;
+        $q = floor($a / $b);
+        $r = $a - $q * $b;
+    }
+
+        printf("NWD($nwd_a, $nwd_b) = $nwd = $x * $nwd_a + $y * $nwd_b\n");
+
+        if ($nwd == 1) {
+            printf("$nwd_b * $y mod $nwd_a = 1 \n");
+        }
+
+        echo "y = $y \n";
+        echo "b = $nwd_a \n";
+
+        if ($y < 0) {
+            return $y + $nwd_a;
+        }
+
+        return $y;
     }
 }
