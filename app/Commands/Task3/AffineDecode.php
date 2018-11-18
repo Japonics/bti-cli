@@ -37,20 +37,17 @@ class AffineDecode extends Command
         $b = intval(preg_replace("/[^0-9]/", "", $b));
         $message = preg_replace("/[^A-Z]/", "", strtoupper($message));
 
-        echo "A: {$a}\n";
-
         $x = $this->extendedEuclides(26, $a);
 
-        print_r("X = {$x}\n");
         $encoded = "";
 
         for ($index = 0; $index < strlen($message); $index++) {
 
             $letter = $message[$index];
-            $dec = ord($letter) % 65;
-            $e = $x * ($dec - $b) % 26;
+            $dec = ord($letter) - 65;
+            $e = ($x * ($dec - $b + 26)) % 26;
 
-            $encoded .= chr($e + 65);
+            $encoded .= chr(abs($e) + 65);
         }
 
         echo "Decoded message is: {$encoded} \n";
@@ -128,15 +125,6 @@ class AffineDecode extends Command
         $q = floor($a / $b);
         $r = $a - $q * $b;
     }
-
-        printf("NWD($nwd_a, $nwd_b) = $nwd = $x * $nwd_a + $y * $nwd_b\n");
-
-        if ($nwd == 1) {
-            printf("$nwd_b * $y mod $nwd_a = 1 \n");
-        }
-
-        echo "y = $y \n";
-        echo "b = $nwd_a \n";
 
         if ($y < 0) {
             return $y + $nwd_a;

@@ -43,8 +43,8 @@ class AffineEncode extends Command
         for ($index = 0; $index < strlen($message); $index++) {
 
             $letter = $message[$index];
-            $dec = ord($letter) % 65;
-            $e = ($a * $dec + $b) % 26;
+            $dec = ord($letter) - 65;
+            $e = (($a * $dec) + $b) % 26;
 
             $encoded .= chr($e + 65);
         }
