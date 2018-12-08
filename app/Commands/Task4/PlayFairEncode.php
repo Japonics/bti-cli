@@ -37,40 +37,62 @@ class PlayFairEncode extends Command
 
         $matrix = static::prepareMatrix($key);
 
-        $helperMatrix = [];
-        for ($index = 0; $index < $helperMatrix; $index++) {
-            $helperMatrix[$matrix[$index]] = $index;
-        }
-
+        $result = "";
         $messageLength = strlen($message);
+
         if ($messageLength % 2 !== 0) {
             $message .= "X";
         }
+
         $limit =  strlen($message);
 
         for ($index = 0; $index < $limit; $index = $index + 2) {
+
             $firstLetter = $message[$index];
             $secondLetter = $message[$index + 1];
-            $firstIndex = $helperMatrix[$firstLetter];
-            $secondIndex = $helperMatrix[$secondLetter];
 
-            if ($firstIndex > $secondIndex) {
-                $min = $secondIndex + 1;
-                $max = $firstIndex + 1;
-            } else {
-                $min = $firstIndex + 1;
-                $max = $secondLetter + 1;
+            // Check if letters are in the same column
+            for ($col = 0; $col < 5; $col++) {
+                $column = $matrix[$col];
+                print_r($column);
+
+                if (in_array($firstLetter, $column) && in_array($secondLetter, $column)) {
+
+                    $firstLetterIndex = intval(array_search($firstLetter, $column));
+                    $secondLetterIndex = intval(array_search($secondLetter, $column));
+
+                    $tempFirstIndex = intval(($firstLetterIndex + 1) % 5);
+                    $tempSecondIndex = intval(($secondLetterIndex + 1) % 5);
+
+                    $result += $column[$tempFirstIndex];
+                    $result += $column[$tempSecondIndex];
+
+                    continue;
+                }
             }
 
-            $encodedFirstIndex = 1;
-            $encodedSecondIndex = 1;
+            // Check if letters are in the same row
+            for ($row = 0; $row < 5; $row++) {
+                $allRow = [];
+                for ($col = 0; $col < 5; $col++) {
+                    $allRow[] = $matrix[$col][$row];
+                }
 
-            if ($max % $min === 0) {
+                if (in_array($firstLetter, $allRow) && in_array($secondLetter, $allRow)) {
 
-                $encodedFirstIndex = $firstIndex + 5;
-                $encodedSecondIndex = $secondIndex + 5;
-                continue;
+                    $firstLetterIndex = array_search($firstLetter, $allRow);
+                    $secondLetterIndex = array_search($secondLetter, $allRow);
+
+                    $result += $allRow[($firstLetterIndex + 1) % 5];
+                    $result += $allRow[($secondLetterIndex + 1) % 5];
+
+                    continue;
+                }
             }
+
+            // Letters are in different rows and columns
+
+
         }
 
         return;
@@ -99,40 +121,56 @@ class PlayFairEncode extends Command
         $result = [];
         $letters = [];
 
-        // Delete repeated letters
-        for ($index = 0; $index < strlen($key); $index++)
-        {
-            if (!in_array($key[$index], $letters, true)) {
-                $letters[] = $key[$index];
-                $result[] = $key[$index];
-            }
-        }
-
         $startLetter = ord('A');
+        $keyLettersLength = strlen($key);
 
-        do {
-            if ($startLetter === 73){
-                $startLetter++;
-            }
-
-            $letter = chr($startLetter);
-
-            if (!in_array($letter, $letters)) {
-                $result[] = $letter;
-            }
-
-            $startLetter++;
-
-        } while (count($result) !== 25);
-
-        for ($index = 0; $index < count($result); $index++)
-        {
-            if ($index % 5 === 0)
+        for ($row = 0; $row < 5; $row++) {
+            for ($col = 0; $col < 5; $col++)
             {
-                print_r("\n");
-            }
+                if ($keyLettersLength !== 0) {
 
-            print_r("\t {$result[$index]}");
+                    $index = ($row + 1) * $col;
+
+                    if (!in_array($key[$index], $letters, true)) {
+
+                        if (!isset($result[$col])) {
+                            $result[$col] = [];
+                        }
+
+                        $letters[] = $key[$index];
+                        $result[$col][$row] = $key[$index];
+                        print_r("\t {$key[$index]}");
+                        $keyLettersLength--;
+                    }
+
+                } else {
+                    if ($startLetter === 73){
+                        $startLetter++;
+                    }
+
+                    $letter = chr($startLetter);
+
+                    if (in_array($letter, $letters)) {
+                        do {
+                            $startLetter++;
+                            $letter = chr($startLetter);
+                        } while (in_array($letter, $letters));
+                    }
+
+                    if (!in_array($letter, $letters)) {
+
+                        if (!isset($result[$col])) {
+                            $result[$col] = [];
+                        }
+
+                        $result[$col][$row] = $letter;
+                        print_r("\t {$letter}");
+                    }
+
+                    $startLetter++;
+                }
+            }
+            print_r("\n");
         }
 
         return $result;
