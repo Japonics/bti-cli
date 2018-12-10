@@ -28,7 +28,7 @@ class PlayFairEncode extends Command
      */
     public function handle()
     {
-        print_r("Affine - encode:\n");
+        print_r("PlayFair - encode:\n");
         $key = readline("Enter KEY: \n");
         $message = readline("Enter text to decode: \n");
 
@@ -51,49 +51,98 @@ class PlayFairEncode extends Command
             $firstLetter = $message[$index];
             $secondLetter = $message[$index + 1];
 
-            // Check if letters are in the same column
-            for ($col = 0; $col < 5; $col++) {
-                $column = $matrix[$col];
-                print_r($column);
+            if ($firstLetter === "I") {
+                $firstLetter = "J";
+            }
 
-                if (in_array($firstLetter, $column) && in_array($secondLetter, $column)) {
+            if ($secondLetter === "I") {
+                $secondLetter = "J";
+            }
 
-                    $firstLetterIndex = intval(array_search($firstLetter, $column));
-                    $secondLetterIndex = intval(array_search($secondLetter, $column));
+            $isFound = false;
+
+            // Check if letters are in the same row
+            for ($row = 0; $row < 5; $row++) {
+
+                $record = $matrix[$row];
+
+                if (in_array($firstLetter, $record) && in_array($secondLetter, $record)) {
+
+                    $firstLetterIndex = intval(array_search($firstLetter, $record));
+                    $secondLetterIndex = intval(array_search($secondLetter, $record));
 
                     $tempFirstIndex = intval(($firstLetterIndex + 1) % 5);
                     $tempSecondIndex = intval(($secondLetterIndex + 1) % 5);
 
-                    $result += $column[$tempFirstIndex];
-                    $result += $column[$tempSecondIndex];
+                    $result .= $record[$tempFirstIndex];
+                    $result .= $record[$tempSecondIndex];
 
-                    continue;
+                    $isFound = true;
+
+                    break;
                 }
             }
 
-            // Check if letters are in the same row
-            for ($row = 0; $row < 5; $row++) {
-                $allRow = [];
-                for ($col = 0; $col < 5; $col++) {
-                    $allRow[] = $matrix[$col][$row];
+            if ($isFound) {
+                continue;
+            }
+
+            $isFound = false;
+
+            // Check if letters are in the same column
+            for ($col = 0; $col < 5; $col++) {
+
+                $record = [];
+
+                for ($row = 0; $row < 5; $row++) {
+                    $record[] = $matrix[$row][$col];
                 }
 
-                if (in_array($firstLetter, $allRow) && in_array($secondLetter, $allRow)) {
+                if (in_array($firstLetter, $record) && in_array($secondLetter, $record)) {
 
-                    $firstLetterIndex = array_search($firstLetter, $allRow);
-                    $secondLetterIndex = array_search($secondLetter, $allRow);
+                    $firstLetterIndex = array_search($firstLetter, $record);
+                    $secondLetterIndex = array_search($secondLetter, $record);
 
-                    $result += $allRow[($firstLetterIndex + 1) % 5];
-                    $result += $allRow[($secondLetterIndex + 1) % 5];
+                    $result .= $record[($firstLetterIndex + 1) % 5];
+                    $result .= $record[($secondLetterIndex + 1) % 5];
 
-                    continue;
+                    $isFound = true;
+
+                    break;
                 }
             }
+
+            if ($isFound) {
+                continue;
+            }
+
+            $firstLetterRow = 0;
+            $firstLetterCol = 0;
+            $secondLetterCol = 0;
+            $secondLetterRow = 0;
 
             // Letters are in different rows and columns
+            for ($row = 0; $row < 5; $row++) {
+                for ($col = 0; $col < 5; $col++) {
 
+                    if ($matrix[$row][$col] === $firstLetter) {
+                        $firstLetterRow = $row;
+                        $secondLetterCol = $col;
+                    }
 
+                    if ($matrix[$row][$col] === $secondLetter) {
+                        $secondLetterRow = $row;
+                        $firstLetterCol = $col;
+                    }
+                }
+            }
+
+            $result .= $matrix[$firstLetterRow][$firstLetterCol];
+            $result .= $matrix[$secondLetterRow][$secondLetterCol];
         }
+
+        print "\n";
+        print "Result: {$result}";
 
         return;
     }
@@ -124,12 +173,12 @@ class PlayFairEncode extends Command
         $startLetter = ord('A');
         $keyLettersLength = strlen($key);
 
-        for ($row = 0; $row < 5; $row++) {
-            for ($col = 0; $col < 5; $col++)
+        for ($col = 0; $col < 5; $col++) {
+            for ($row = 0; $row < 5; $row++)
             {
                 if ($keyLettersLength !== 0) {
 
-                    $index = ($row + 1) * $col;
+                    $index = ($col + 1) * $row;
 
                     if (!in_array($key[$index], $letters, true)) {
 
